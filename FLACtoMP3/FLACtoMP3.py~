@@ -22,7 +22,7 @@ How to:
 requirements:
 	Needs 'python', 'flac', 'lame' packages installed to work.
 
-------------------
+
 Version 1.0.2
 
 """
