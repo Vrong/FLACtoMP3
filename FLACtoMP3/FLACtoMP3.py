@@ -22,8 +22,7 @@ How to:
 requirements:
 	Needs 'python', 'flac', 'lame' packages installed to work.
 
-------------------
-Version 1.0.2
+Version 1.0.4
 
 """
 
@@ -88,7 +87,11 @@ def convertFolder(cur_path, dst_path):
 				total_found = total_found +1
 				type, enco = mimetypes.guess_type(cur_file)
 				#print the current file and its MIME type
-				print(cur_file + " : " + type)
+				print("__________________________________________")
+				if type != None:
+					print(cur_file + " : " + type)
+				else:
+					print(cur_file + " : None")
 				
 				if type == 'audio/flac': #convert flac to mp3
 					dstmp3 = change_extension(dst_file, '.flac', '.mp3')
@@ -101,9 +104,9 @@ def convertFolder(cur_path, dst_path):
 						shutil.copyfile(cur_file, dst_file)
 						total_copied = total_copied +1
 
-				"""
-				incoming modifications to handle other formats (wav, ..)
-				"""		
+					"""
+					incoming modifications to handle other formats (wav, ..)
+					"""		
 				else: #ignored files
 					total_found = total_found -1
 					total_ignored = total_ignored +1
