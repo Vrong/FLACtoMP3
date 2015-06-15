@@ -4,10 +4,15 @@ Author: Vrong
 Mail: getvrong@gmail.com
 
 Description:
-	This script converts any existing flac/wave file in a given source directory and its sub directories
-	into mp3 320kb files organised in a identical file tree. Mp3 files that doesn't need to be converted are just copied into
-	the destination folder. The destination folder with all mp3 is ./___mp3export by default, 
-	and all repertories are recreated in it.
+	This script converts any existing flac/wave file in a given source directory and its sub 
+	directories into mp3 320kb files organised in a identical file tree. Mp3 files that doesn't 
+	need to be converted are just copied into the destination folder. The destination folder with 
+	all mp3 is ./___mp3export by default, and all repertories are recreated in it.
+	
+	/!\ Don't run the program with a non empty destination folder, it will erase everything that 
+	is not matching with what is the source folder. 
+	This allows your mp3 library to be synchronized with your FLAC/Quality library.
+	If you remove songs from your flac library they will be removed in the destination folder too 		to ensure a kind of synchronization.
 
 How to:
 	Just place the script with at the root of your music libraries or song folders, then start it.
@@ -21,7 +26,7 @@ How to:
 Requirements:
 	Needs 'python', 'flac', 'lame' packages installed to work.
 
-Version 2.1
+Version 2.2
 
 """
 
