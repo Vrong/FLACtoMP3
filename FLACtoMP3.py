@@ -41,8 +41,8 @@ start = datetime.datetime.now()
 
 src = '.'
 dst = './___mp3export'
-program = "./" + __file__;
-
+program = __file__;
+print(program + " " )
 #set source and destination folders from arguments and remove '/' at the end of both
 if len(sys.argv) == 3:
 	src = sys.argv[1]
