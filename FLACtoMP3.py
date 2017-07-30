@@ -12,7 +12,7 @@ Description:
 	/!\ Don't run the program with a non empty destination folder, it will erase everything that
 	is not matching with what is the source folder.
 	This allows your mp3 library to be synchronized with your FLAC/Quality library.
-	If you remove songs from your flac library they will be removed in the destination folder too 		to ensure a kind of synchronization.
+	If you remove songs from your flac library they will be removed in the destination folder too to ensure a kind of synchronization.
 
 How to:
 	Just place the script with at the root of your music libraries or song folders, then start it.
@@ -24,7 +24,7 @@ How to:
 	python ./FLACtoMP3 <source> <out_directory>
 
 Requirements:
-	Needs 'python', 'flac', 'lame' packages installed to work.
+	Needs 'python3', 'python3-mutagen', 'flac', 'lame' packages installed to work.
 
 Version 2.2
 
@@ -35,6 +35,9 @@ import mimetypes
 import shutil
 import sys
 import datetime
+import mutagen
+from mutagen.easyid3 import EasyID3
+from mutagen.flac import FLAC
 
 start = datetime.datetime.now()
 
@@ -80,10 +83,10 @@ def removeOutdatedMp3(cur_path, dst_path):
 		cur_file = cur_path + '/' + f #file that is supposed to exist (but with mp3 extension)
 		dst_file = dst_path + '/' + f
 
-		#don't treat the script nor the destination directory
+		#don't process the script nor the destination directory
 		if cur_file != dst_path and cur_file != program:
 
-			if os.path.isdir(dst_file): #if it's a folder, so create its mirror
+			if os.path.isdir(dst_file): # if it's a folter, remove it if its source does not exist
 				if not os.path.exists(cur_file):
 					shutil.rmtree(dst_file)
 					total_removed_folders = total_removed_folders + 1
@@ -147,8 +150,8 @@ def convertFolder(cur_path, dst_path):
 	for f in os.listdir(cur_path):
 
 		# create current examinated file path and his mp3 destination equivalent
-		cur_file = cur_path + '/' + f
-		dst_file = dst_path + '/' + f
+		cur_file = os.path.join(cur_path, f)
+		dst_file = os.path.join(dst_path, f)
 
 		#don't treat the script nor the destination directory
 		if cur_file != dst_path and cur_file != program:
@@ -165,45 +168,68 @@ def convertFolder(cur_path, dst_path):
 				total_found = total_found +1
 				type, enco = mimetypes.guess_type(cur_file)
 				total_files_scanned = total_files_scanned + 1
-				#print the current file and its MIME type
-				#print("__________________________________________")
-
-				#if type != None:
-				#	print(cur_file + " : " + type)
-				#else:
-				#	print(cur_file + " : None")
 
 				if type == 'audio/flac': #convert flac to mp3
 					dstmp3 = change_extension(dst_file, '.flac', '.mp3')
 					if not os.path.exists(dstmp3):
-						print("__________________________________________")
-						print(cur_file + " : " + type)
-						os.system("flac -dc " + shellprotect(cur_file) + " | lame -b 320 - " + shellprotect(dstmp3) )
-						total_converted = total_converted + 1;
+						separator(cur_file, type)
+						fromFlac(cur_file, dstmp3)
+						total_converted = total_converted + 1
 
-				if type == 'audio/wav' or type == 'audio/x-wav': #convert flac to mp3
+				elif type == 'audio/wav' or type == 'audio/x-wav': #convert wav to mp3
 					dstmp3 = change_extension(dst_file, '.wav', '.mp3')
 					dstmp3 = change_extension(dstmp3, '.wave', '.mp3')
 					if not os.path.exists(dstmp3):
-						print("__________________________________________")
-						print(cur_file + " : " + type)
-						os.system("lame -h -b 320 " + shellprotect(cur_file) + " " + shellprotect(dstmp3) )
-						total_converted = total_converted + 1;
+						separator(cur_file, type)
+						fromWave(cur_file, dstmp3)
+						total_converted = total_converted + 1
 
 				elif type == 'audio/mpeg': #copy file if it is a mp3
 					if not os.path.exists(dst_file):
-						print("__________________________________________")
-						print(cur_file + " : " + type)
-						shutil.copyfile(cur_file, dst_file)
+						separator(cur_file, type)
+						fromMp3(cur_file, dst_file)
 						total_copied = total_copied +1
-
 					"""
 					incoming modifications to handle other formats (wav, ..)
 					"""
 				else: #ignored files
 					total_found = total_found -1
 					total_ignored = total_ignored +1
+					pass
 			pass
+	pass
+
+def separator(cur_file, type):
+	print("__________________________________________")
+	print(cur_file + " : " + type)
+
+def mutagen_id_copy_flac(src, dst):
+    conversion_table = { 'catalog':'catalognumber'}
+    flacfile = FLAC(src)
+    try:
+        mp3file = EasyID3(dst)
+    except mutagen.id3.ID3NoHeaderError:
+        mp3file = mutagen.File(dst, easy=True)
+        mp3file.add_tags()
+    for tag in flacfile:
+        if tag in EasyID3.valid_keys.keys():
+            mp3file[tag] = flacfile[tag]
+        elif tag in conversion_table.keys():
+            mp3file[conversion_table[tag]] = flacfile[tag]
+    mp3file.save()
+
+def fromFlac(src, dstmp3):
+	os.system("flac -dc " + shellprotect(src) + " | lame -b 320 - " + shellprotect(dstmp3) )
+	mutagen_id_copy_flac(src, dstmp3)
+	pass
+
+def fromWave(src, dstmp3):
+	os.system("lame -h -b 320 " + shellprotect(src) + " " + shellprotect(dstmp3) )
+	#mutagen_id_copy(src, dstmp3)
+	pass
+
+def fromMp3(src, dstmp3):
+	shutil.copyfile(src, dstmp3)
 	pass
 
 
